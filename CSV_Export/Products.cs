@@ -9,18 +9,18 @@ namespace CSV_Export
 {
     public class Products
     {
-        public string Product_code { get; set; }
-        public string Name { get; set; }
-        public string Description { get; set; }
+        public string product_code { get; set; }
+        public string name { get; set; }
+        public string description { get; set; }
 
         public Products() { }
 
         public Products(string _product_code, string _name, string _desc)
         {
-            this.Product_code = _product_code;
-            this.Name = _name;
-            this.Description = _desc;
-        }
+            this.product_code = _product_code;
+            this.name = _name;
+            this.description = _desc;
+        } 
         
     }
 

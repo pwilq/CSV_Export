@@ -1,6 +1,9 @@
 ﻿using CsvHelper;
 using System;
+using System.Configuration;
 using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -18,8 +21,51 @@ namespace CSV_Export
 
         public List<Products> CreateCSV()
         {
-            P.Add(new Products("AAA", "AAAname", "AAAdesc"));
-            P.Add(new Products("BBB", "BBBname", "BBBdesc"));
+            StringBuilder errorMessages = new StringBuilder();
+
+            ConnectionStringSettingsCollection settings = System.Configuration.ConfigurationManager.ConnectionStrings;
+            var ConnectionString = settings[1].ConnectionString;
+
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
+            {
+                try
+                {
+                    connection.Open();
+                    CreateSqlQuery();
+
+                    SqlCommand queryCommand = new SqlCommand(this.SqlQuery, connection);
+                    SqlDataReader reader = queryCommand.ExecuteReader();
+
+                    if (reader.HasRows)
+                    {
+                        DataTable dt = new DataTable();
+                        dt.Load(reader);
+
+                        for (int i = 0; i < dt.Rows.Count; i++)
+                        {
+                            var outputHtml = dt.Rows[i][2].ToString().Replace("\r\n", "<br>").Replace("\n", "<br>").Replace("</ b>", "</b>");
+                            P.Add(new Products(dt.Rows[i][0].ToString(), dt.Rows[i][1].ToString(), outputHtml));
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Brak danych, sprawdź zapytanie SQL.");
+                    }
+                    reader.Dispose();
+                }
+                catch (SqlException ex)
+                {
+                    for (int i = 0; i < ex.Errors.Count; i++)
+                    {
+                        errorMessages.Append("Index #" + i + "\n" +
+                            "Message: " + ex.Errors[i].Message + "\n" +
+                            "LineNumber: " + ex.Errors[i].LineNumber + "\n" +
+                            "Source: " + ex.Errors[i].Source + "\n" +
+                            "Procedure: " + ex.Errors[i].Procedure + "\n");
+                    }
+                    Console.WriteLine(errorMessages.ToString());
+                }
+            }
             return P;
         }
 
@@ -47,8 +93,12 @@ namespace CSV_Export
         }
 
 
-
+        public void CreateSqlQuery()
+        {
+            this.SqlQuery = "SELECT Twr_Kod AS product_code, " +
+                            "(SELECT TLM_Tekst FROM CDN.Tlumaczenia WHERE(TLM_Numer = CDN.TwrKarty.Twr_GIDNumer) AND(TLM_Jezyk = 1668) AND(TLM_Typ = 16)) AS name, " +
+                            "(SELECT TwO_Opis FROM CDN.TwrOpisy WHERE(TwO_TwrNumer = CDN.TwrKarty.Twr_GIDNumer) AND(TwO_Jezyk = 1668)) AS description " +
+                            "FROM CDN.TwrKarty WHERE (Twr_Archiwalny <> 1) AND (Twr_ESklep = 1) ";
+        }
     }
-
-     
 }
