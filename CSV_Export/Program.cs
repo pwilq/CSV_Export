@@ -15,13 +15,9 @@ namespace CSV_Export
         
         static void Main(string[] args)
         {
-            string ftpUsername = System.Configuration.ConfigurationManager.AppSettings["ftpUsername"];
-
             ServiceCSV CSV = new ServiceCSV();
-            List<Products> DaneUni = CSV.CreateCSV();
-            CSV.SaveCSV(DaneUni);
-
-            //Console.ReadKey();
+            List<Products> DataToCsv = CSV.CreateCSV();
+            CSV.SaveCSV(DataToCsv);
         }
 
     }

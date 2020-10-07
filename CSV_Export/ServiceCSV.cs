@@ -18,7 +18,6 @@ namespace CSV_Export
 
         List<Products> P = new List<Products>();
 
-
         public List<Products> CreateCSV()
         {
             StringBuilder errorMessages = new StringBuilder();
@@ -91,7 +90,6 @@ namespace CSV_Export
                 
             }
         }
-
 
         public void CreateSqlQuery()
         {
